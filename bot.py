@@ -1,8 +1,13 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import telebot
 from telebot import types
 import datetime
 
-bot = telebot.TeleBot("8803596338:AAFew42XXG8IEwTiabppOsh3fu_MdKecd_o")
+bot = telebot.TeleBot(os.getenv("TOKEN"))
 
 @bot.message_handler(commands=["start"])
 def start(message):
