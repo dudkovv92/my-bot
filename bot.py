@@ -1,3 +1,4 @@
+import json
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -8,6 +9,7 @@ import datetime
 import requests
 
 bot = telebot.TeleBot(os.getenv("TOKEN"))
+users = {}
 
 @bot.message_handler(commands=["start"])
 def start(message):
@@ -87,6 +89,34 @@ def btn_currency(message):
 @bot.message_handler(func=lambda m: m.text == "Факт")
 def btn_fact(message):
     fact(message)
+
+@bot.message_handler(commands=["name"])
+def set_name(message):
+    parts = message.text.split()
+    if len(parts) < 2:
+        bot.send_message(message.chat.id, "Напиши: /name Илья")
+        return
+    try:
+        with open("users.json", "r", encoding="utf-8") as f:
+            users = json.load(f)
+    except:
+        users = {}
+    users[str(message.chat.id)] = parts[1]
+    with open("users.json", "w", encoding="utf-8") as f:
+        json.dump(users, f, ensure_ascii=False)
+    bot.send_message(message.chat.id, "Запомнил: " + parts[1])
+
+@bot.message_handler(commands=["whoami"])
+def whoami(message):
+    try:
+        with open("users.json", "r", encoding="utf-8") as f:
+            users = json.load(f)
+    except:
+        users = {}
+    if str(message.chat.id) in users:
+        bot.send_message(message.chat.id, "Ты " + users[str(message.chat.id)])
+    else:
+        bot.send_message(message.chat.id, "Я тебя не знаю. Напиши /name Имя")
 
 @bot.message_handler()
 def echo(message):
