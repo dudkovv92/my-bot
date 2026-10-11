@@ -13,8 +13,16 @@ users = {}
 
 @bot.message_handler(commands=["start"])
 def start(message):
-    bot.send_message(message.chat.id, "Привет, братан!")
-
+    try:
+        with open("users.json", "r", encoding="utf-8") as f:
+            users = json.load(f)
+    except:
+        users = {}
+    if str(message.chat.id) in users:
+        bot.send_message(message.chat.id, "Привет, " + users[str(message.chat.id)] + "!")
+    else:
+        bot.send_message(message.chat.id, "Привет! Напиши /name Имя, чтобы я запомнил")
+        
 @bot.message_handler(commands=["help"])
 def help_cmd(message):
     bot.send_message(message.chat.id, "Команды: /start, /help, /time, /menu, /weather")
