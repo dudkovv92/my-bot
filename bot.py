@@ -23,9 +23,12 @@ def time_cmd(message):
     bot.send_message(message.chat.id, "Сейчас: " + now)
 
 @bot.message_handler(commands=["menu"])
+
 def menu(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(types.KeyboardButton("Время"), types.KeyboardButton("Привет"))
+    markup.add(types.KeyboardButton("Погода"), types.KeyboardButton("Курс"))
+    markup.add(types.KeyboardButton("Факт"))
     bot.send_message(message.chat.id, "Выбери:", reply_markup=markup)
 
 @bot.message_handler(commands=["weather"])
@@ -50,7 +53,6 @@ def btn_time(message):
 def btn_hi(message):
     bot.send_message(message.chat.id, "И тебе привет, братан!")
 
-@bot.message_handler()
 @bot.message_handler(commands=["currency"])
 def currency(message):
     r = requests.get("https://www.cbr-xml-daily.ru/daily_json.js")
@@ -63,7 +65,29 @@ def currency(message):
     text += "EUR: " + str(eur) + " ₽\n"
     text += "CNY: " + str(cny) + " ₽"
     bot.send_message(message.chat.id, text)
-    
+
+@bot.message_handler(commands=["fact"])
+def fact(message):
+    try:
+        r = requests.get("https://api.popcat.xyz/v2/joke")
+        data = r.json()
+        bot.send_message(message.chat.id, data["message"]["joke"])
+    except Exception as e:
+        bot.send_message(message.chat.id, "Ошибка: " + str(e))
+
+@bot.message_handler(func=lambda m: m.text == "Погода")
+def btn_weather(message):
+    weather(message)
+
+@bot.message_handler(func=lambda m: m.text == "Курс")
+def btn_currency(message):
+    currency(message)
+
+@bot.message_handler(func=lambda m: m.text == "Факт")
+def btn_fact(message):
+    fact(message)
+
+@bot.message_handler()
 def echo(message):
     bot.send_message(message.chat.id, "Ты написал: " + message.text)
 
