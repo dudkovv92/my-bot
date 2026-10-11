@@ -51,6 +51,19 @@ def btn_hi(message):
     bot.send_message(message.chat.id, "И тебе привет, братан!")
 
 @bot.message_handler()
+@bot.message_handler(commands=["currency"])
+def currency(message):
+    r = requests.get("https://www.cbr-xml-daily.ru/daily_json.js")
+    data = r.json()
+    usd = data["Valute"]["USD"]["Value"]
+    eur = data["Valute"]["EUR"]["Value"]
+    cny = data["Valute"]["CNY"]["Value"]
+    text = "Курс валют:\n"
+    text += "USD: " + str(usd) + " ₽\n"
+    text += "EUR: " + str(eur) + " ₽\n"
+    text += "CNY: " + str(cny) + " ₽"
+    bot.send_message(message.chat.id, text)
+    
 def echo(message):
     bot.send_message(message.chat.id, "Ты написал: " + message.text)
 
