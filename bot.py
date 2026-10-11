@@ -69,9 +69,10 @@ def currency(message):
 @bot.message_handler(commands=["fact"])
 def fact(message):
     try:
-        r = requests.get("https://api.popcat.xyz/v2/joke")
-        data = r.json()
-        bot.send_message(message.chat.id, data["message"]["joke"])
+        with open("facts.txt", "r", encoding="utf-8") as f:
+            facts = f.readlines()
+        import random
+        bot.send_message(message.chat.id, random.choice(facts))
     except Exception as e:
         bot.send_message(message.chat.id, "Ошибка: " + str(e))
 
