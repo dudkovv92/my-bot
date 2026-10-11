@@ -118,6 +118,25 @@ def whoami(message):
     else:
         bot.send_message(message.chat.id, "Я тебя не знаю. Напиши /name Имя")
 
+@bot.message_handler(commands=["inline"])
+def inline(message):
+    markup = types.InlineKeyboardMarkup()
+    btn1 = types.InlineKeyboardButton("Время", callback_data="time")
+    btn2 = types.InlineKeyboardButton("Погода", callback_data="weather")
+    markup.add(btn1, btn2)
+    bot.send_message(message.chat.id, "Выбери:", reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback(call):
+    if call.data == "time":
+        now = datetime.datetime.now().strftime("%H:%M:%S")
+        bot.send_message(call.message.chat.id, "Сейчас: " + now)
+    elif call.data == "weather":
+        r = requests.get("https://wttr.in/Lyantor?format=j1")
+        data = r.json()
+        temp = data["current_condition"][0]["temp_C"]
+        bot.send_message(call.message.chat.id, "В Лянторе: " + temp + "°C")
+
 @bot.message_handler()
 def echo(message):
     bot.send_message(message.chat.id, "Ты написал: " + message.text)
