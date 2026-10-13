@@ -4,6 +4,7 @@ import aiohttp
 async def get(session, url):
     async with session.get(url) as r:
         return await r.text()
+
 async def main():
     urls = [
         "https://wttr.in/Lyantor?format=3",
