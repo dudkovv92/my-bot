@@ -51,12 +51,31 @@ class NotesApp:
 
 # --- Проверка ---
 app = NotesApp("notes.txt")
-app.add("Купить хлеб")
-app.add("Позвонить маме")
-app.show()
-print("---")
-app.delete(1)
-app.show()
-print("---")
-for n in app.find("маме"):
-    print(n)
+
+while True:
+    print("\n1. Добавить")
+    print("2. Показать")
+    print("3. Найти")
+    print("4. Удалить")
+    print("5. Выход")
+    choice = input("Выбери: ")
+
+    if choice == "1":
+        text = input("Текст: ")
+        app.add(text)
+    elif choice == "2":
+        app.show()
+    elif choice == "3":
+        word = input("Что ищем: ")
+        res = app.find(word)
+        if not res:
+            print("Ничего не найдено")
+        for n in res:
+            print(n)
+    elif choice == "4":
+        try:
+            app.delete(int(input("ID: ")))
+        except ValueError:
+            print("Нужно число")
+    elif choice == "5":
+        break
