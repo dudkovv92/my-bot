@@ -38,7 +38,7 @@ def get_weather(city, db):
     url = "https://api.open-meteo.com/v1/forecast?latitude=" + str(lat) + "&longitude=" + str(lon) + "&current_weather=true"
     
     try:
-        r = requests.get(url, timeout=10)
+        r = requests.get(url, timeout=30)
         data = r.json()
         temp = str(data["current_weather"]["temperature"])
         now = datetime.datetime.now().strftime("%H:%M:%S")
