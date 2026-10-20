@@ -1,44 +1,32 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from db import NotesDB
 
 app = FastAPI()
+db = NotesDB("notes.db")
 
 class Note(BaseModel):
     text: str
-
-notes = []
-next_id = 1
 
 @app.get("/")
 def root():
     return {"message": "Привет, братан!"}
 
-@app.get("/weather")
-def weather(city: str = "Лянтор"):
-    return {"city": city, "temp": "0°C"}
-
 @app.get("/notes")
 def get_notes():
-    return notes
+    return db.get_all()
 
 @app.post("/notes")
 def add_note(note: Note):
-    global next_id
-    new_note = {"id": next_id, "text": note.text}
-    notes.append(new_note)
-    next_id += 1
-    return new_note
+    new_id = db.add(note.text)
+    return {"id": new_id, "text": note.text}
 
 @app.put("/notes/{note_id}")
 def update_note(note_id: int, note: Note):
-    for n in notes:
-        if n["id"] == note_id:
-            n["text"] = note.text
-            return {"status": "updated", "note": n}
-    return {"error": "not found"}
+    db.update(note_id, note.text)
+    return {"status": "updated"}
 
 @app.delete("/notes/{note_id}")
 def delete_note(note_id: int):
-    global notes
-    notes = [n for n in notes if n["id"] != note_id]
+    db.delete(note_id)
     return {"status": "deleted"}
