@@ -40,6 +40,10 @@ def root():
 def get_notes():
     return db.get_all()
 
+@app.get("/hello")
+def hello():
+    return {"message": "Это новая фича!"}
+
 @app.post("/notes")
 def add_note(note: Note):
     new_id = db.add(note.text)
