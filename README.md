@@ -12,9 +12,9 @@
 
 ## 🚀 Мои проекты:
 * **[FastAPI Backend](https://github.com/dudkovv92/python-projects-2/tree/main/fastapi_project)** — REST API с базой данных, JWT-авторизацией, тестами и Docker.
-  * *Живая демонстрация:* **[https://my-bot-e1ln.onrender.com/docs]**
+  * *Живая демонстрация:* **https://my-bot-e1ln.onrender.com/docs**
 * **[Telegram Bot (Модульный)](https://github.com/dudkovv92/mybot-oop)** — Бот с базой данных, кнопками и командами.
 * **[Weather Parser](https://github.com/dudkovv92/python-projects-2/tree/main/weather_project)** — Парсер погоды с сохранением в SQLite.
 
 ## 📫 Как со мной связаться:
-* **Telegram:** @**[d1tree1n]**
+* **Telegram:** @**d1tree1n**
