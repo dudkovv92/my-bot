@@ -4,16 +4,20 @@
     <meta charset="UTF-8">
     <title>Мои заметки</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding-top: 50px; }
-        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 450px; }
-        h1 { text-align: center; color: #333; }
+        body { font-family: sans-serif; background: #121212; display: flex; justify-content: center; padding-top: 50px; color: #e0e0e0; }
+        .container { background: #1e1e1e; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 450px; }
+        h1 { text-align: center; color: #ffffff; }
         .input-group { display: flex; margin-bottom: 20px; }
-        input[type="text"] { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px 0 0 5px; outline: none; }
+        input[type="text"] { flex-grow: 1; padding: 10px; background: #2c2c2c; color: white; border: 1px solid #444; border-radius: 5px 0 0 5px; outline: none; }
+        input[type="text"]::placeholder { color: #888; }
         button.add-btn { padding: 10px; background: #28a745; color: white; border: none; border-radius: 0 5px 5px 0; cursor: pointer; font-size: 16px; }
         button.add-btn:hover { background: #218838; }
         ul { list-style-type: none; padding: 0; }
-        li { background: #e4e6eb; margin-bottom: 10px; padding: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
-        button.del-btn { background: #dc3545; color: white; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; margin-left: 10px; font-size: 14px;}
+        li { background: #2c2c2c; margin-bottom: 10px; padding: 12px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #007bff; }
+        .note-content { display: flex; flex-direction: column; }
+        .note-text { font-size: 16px; margin-bottom: 5px; }
+        .note-date { font-size: 12px; color: #888; }
+        button.del-btn { background: #dc3545; color: white; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; font-size: 14px;}
         button.del-btn:hover { background: #c82333; }
     </style>
 </head>
@@ -39,17 +43,28 @@
             notes.forEach(note => {
                 const li = document.createElement('li');
                 
-                // Текст заметки
-                const span = document.createElement('span');
-                span.textContent = note.text;
+                // Блок с текстом и датой
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'note-content';
+                
+                const textSpan = document.createElement('span');
+                textSpan.className = 'note-text';
+                textSpan.textContent = note.text;
+                
+                const dateSpan = document.createElement('span');
+                dateSpan.className = 'note-date';
+                dateSpan.textContent = note.created_at ? 'Создано: ' + note.created_at : '';
+                
+                contentDiv.appendChild(textSpan);
+                contentDiv.appendChild(dateSpan);
                 
                 // Кнопка удаления
                 const btn = document.createElement('button');
                 btn.textContent = 'Удалить';
                 btn.className = 'del-btn';
-                btn.onclick = () => deleteNote(note.id); // Передаем ID заметки
+                btn.onclick = () => deleteNote(note.id);
                 
-                li.appendChild(span);
+                li.appendChild(contentDiv);
                 li.appendChild(btn);
                 list.appendChild(li);
             });
@@ -70,12 +85,11 @@
             loadNotes(); 
         }
 
-        // Функция удаления
         async function deleteNote(id) {
             await fetch('/notes/' + id, {
                 method: 'DELETE'
             });
-            loadNotes(); // Обновляем список после удаления
+            loadNotes(); 
         }
 
         loadNotes();
