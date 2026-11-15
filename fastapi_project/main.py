@@ -1,14 +1,23 @@
+import os
 import datetime
 import time
 import jwt
-from fastapi import FastAPI, BackgroundTasks, HTTPException, Depends
+from fastapi import FastAPI, Request, BackgroundTasks, HTTPException, Depends
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from db import NotesDB
 
 app = FastAPI()
+
+# Настройка шаблонов
+templates = Jinja2Templates(directory="templates")
+
+# База данных
 db = NotesDB("notes.db")
 
+# Секреты и авторизация
 SECRET = "super_secret_key"
 security = HTTPBearer()
 users = {} # Пока в памяти
@@ -31,11 +40,12 @@ def run_slow(background_tasks: BackgroundTasks, text: str = "Тест"):
     background_tasks.add_task(slow_task, text)
     return {"message": "Задача запущена в фоне"}
 
-# --- Заметки ---
-@app.get("/")
-def root():
-    return {"message": "Привет, братан!"}
+# --- Главная страница (HTML) ---
+@app.get("/", response_class=HTMLResponse)
+def read_root(request: Request):
+    return templates.TemplateResponse(request=request, name="index.html", context={"notes": []})
 
+# --- Заметки ---
 @app.get("/notes")
 def get_notes():
     return db.get_all()
@@ -59,7 +69,7 @@ def delete_note(note_id: int):
     db.delete(note_id)
     return {"status": "deleted"}
 
-# --- Авторизация ---
+# --- Авторизация (JWT) ---
 def create_token(username: str):
     payload = {
         "sub": username,

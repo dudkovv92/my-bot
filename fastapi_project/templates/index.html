@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Мои заметки</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding-top: 50px; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 400px; }
+        h1 { text-align: center; color: #333; }
+        .input-group { display: flex; margin-bottom: 20px; }
+        input[type="text"] { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px 0 0 5px; outline: none; }
+        button.add-btn { padding: 10px; background: #28a745; color: white; border: none; border-radius: 0 5px 5px 0; cursor: pointer; font-size: 16px; }
+        button.add-btn:hover { background: #218838; }
+        ul { list-style-type: none; padding: 0; }
+        li { background: #e4e6eb; margin-bottom: 10px; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Мои заметки</h1>
+        
+        <!-- Форма добавления -->
+        <div class="input-group">
+            <input type="text" id="note-input" placeholder="Введи новую заметку...">
+            <button class="add-btn" onclick="addNote()">Добавить</button>
+        </div>
+
+        <!-- Список заметок -->
+        <ul id="notes-list"></ul>
+    </div>
+
+    <script>
+        // Функция загрузки заметок
+        async function loadNotes() {
+            const response = await fetch('/notes');
+            const notes = await response.json();
+            const list = document.getElementById('notes-list');
+            list.innerHTML = '';
+            notes.forEach(note => {
+                const li = document.createElement('li');
+                li.textContent = note.text;
+                list.appendChild(li);
+            });
+        }
+
+        // Функция добавления заметки
+        async function addNote() {
+            const input = document.getElementById('note-input');
+            const text = input.value.trim();
+            if (!text) return; // Если пусто, ничего не делаем
+
+            await fetch('/notes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
+            });
+            
+            input.value = ''; // Очищаем поле
+            loadNotes(); // Обновляем список
+        }
+
+        // Загружаем заметки при открытии страницы
+        loadNotes();
+    </script>
+</body>
+</html>
