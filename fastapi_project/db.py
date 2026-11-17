@@ -13,6 +13,9 @@ class NotesDB:
             )
         """)
         self.conn.commit()
+    def update(self, note_id, text):
+        self.cur.execute("UPDATE notes SET text = ? WHERE id = ?", (text, note_id))
+        self.conn.commit()
 
     def add(self, text):
         now = datetime.datetime.now().strftime("%d.%m.%Y %H:%M")
@@ -41,3 +44,6 @@ class NotesService:
 
     def delete_note(self, note_id):
         self.db.delete(note_id)
+
+    def update_note(self, note_id, text):
+        self.db.update(note_id, text)

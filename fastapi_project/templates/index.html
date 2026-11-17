@@ -17,8 +17,12 @@
         .note-content { display: flex; flex-direction: column; }
         .note-text { font-size: 16px; margin-bottom: 5px; }
         .note-date { font-size: 12px; color: #888; }
-        button.del-btn { background: #dc3545; color: white; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; font-size: 14px;}
-        button.del-btn:hover { background: #c82333; }
+        
+        /* Стили для кнопок */
+        .edit-btn { background: #ffc107; color: #000; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; margin-right: 5px; font-size: 14px; }
+        .edit-btn:hover { background: #e0a800; }
+        .del-btn { background: #dc3545; color: white; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; font-size: 14px;}
+        .del-btn:hover { background: #c82333; }
     </style>
 </head>
 <body>
@@ -43,7 +47,6 @@
             notes.forEach(note => {
                 const li = document.createElement('li');
                 
-                // Блок с текстом и датой
                 const contentDiv = document.createElement('div');
                 contentDiv.className = 'note-content';
                 
@@ -58,14 +61,26 @@
                 contentDiv.appendChild(textSpan);
                 contentDiv.appendChild(dateSpan);
                 
+                // Блок с кнопками
+                const btnDiv = document.createElement('div');
+                
+                // Кнопка редактирования
+                const editBtn = document.createElement('button');
+                editBtn.textContent = '✏️';
+                editBtn.className = 'edit-btn';
+                editBtn.onclick = () => editNote(note.id, note.text);
+                
                 // Кнопка удаления
-                const btn = document.createElement('button');
-                btn.textContent = 'Удалить';
-                btn.className = 'del-btn';
-                btn.onclick = () => deleteNote(note.id);
+                const delBtn = document.createElement('button');
+                delBtn.textContent = '🗑️';
+                delBtn.className = 'del-btn';
+                delBtn.onclick = () => deleteNote(note.id);
+                
+                btnDiv.appendChild(editBtn);
+                btnDiv.appendChild(delBtn);
                 
                 li.appendChild(contentDiv);
-                li.appendChild(btn);
+                li.appendChild(btnDiv);
                 list.appendChild(li);
             });
         }
@@ -83,6 +98,18 @@
             
             input.value = ''; 
             loadNotes(); 
+        }
+
+        async function editNote(id, oldText) {
+            const newText = prompt("Редактировать заметку:", oldText);
+            if (newText !== null && newText.trim() !== "") {
+                await fetch('/notes/' + id, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: newText })
+                });
+                loadNotes();
+            }
         }
 
         async function deleteNote(id) {

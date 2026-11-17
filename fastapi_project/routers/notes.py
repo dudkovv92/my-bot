@@ -21,3 +21,8 @@ def add_note(note: Note, service: NotesService = Depends(get_notes_service)):
 def delete_note(note_id: int, service: NotesService = Depends(get_notes_service)):
     service.delete_note(note_id)
     return {"status": "deleted"}
+
+@router.put("/notes/{note_id}")
+def update_note(note_id: int, note: Note, service: NotesService = Depends(get_notes_service)):
+    service.update_note(note_id, note.text)
+    return {"status": "updated"}
