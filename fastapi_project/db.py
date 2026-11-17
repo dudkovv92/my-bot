@@ -27,3 +27,17 @@ class NotesDB:
     def delete(self, note_id):
         self.cur.execute("DELETE FROM notes WHERE id = ?", (note_id,))
         self.conn.commit()
+
+# --- Наш новый сервисный слой ---
+class NotesService:
+    def __init__(self, db):
+        self.db = db
+
+    def get_notes(self):
+        return self.db.get_all()
+
+    def add_note(self, text):
+        return self.db.add(text)
+
+    def delete_note(self, note_id):
+        self.db.delete(note_id)
