@@ -1,40 +1,24 @@
-import os
-import datetime
-import time
-import jwt
-from fastapi import FastAPI, Request, BackgroundTasks, HTTPException, Depends
+from fastapi import FastAPI, Request, BackgroundTasks, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from db import NotesDB
+from auth import AuthManager, User
+import time
 
-app = FastAPI()
-
-# Настройка шаблонов
-templates = Jinja2Templates(directory="templates")
-
-# База данных
-db = NotesDB("notes.db")
-
-# Секреты и авторизация
-SECRET = "super_secret_key"
-security = HTTPBearer()
-users = {} # Пока в памяти
-
-# --- Модели ---
-class Note(BaseModel):
-    text: str
-
-class User(BaseModel):
-    username: str
-    password: str
-
-# --- Фоновые задачи ---
 def slow_task(text):
     time.sleep(5)
     print("Фоновая задача выполнена: " + text)
 
+app = FastAPI()
+templates = Jinja2Templates(directory="templates")
+db = NotesDB("notes.db")
+auth = AuthManager()
+
+class Note(BaseModel):
+    text: str
+
+# --- Фоновые задачи ---
 @app.post("/slow")
 def run_slow(background_tasks: BackgroundTasks, text: str = "Тест"):
     background_tasks.add_task(slow_task, text)
@@ -50,57 +34,25 @@ def read_root(request: Request):
 def get_notes():
     return db.get_all()
 
-@app.get("/hello")
-def hello():
-    return {"message": "Это новая фича!"}
-
 @app.post("/notes")
 def add_note(note: Note):
     new_id = db.add(note.text)
     return {"id": new_id, "text": note.text}
-
-@app.put("/notes/{note_id}")
-def update_note(note_id: int, note: Note):
-    db.update(note_id, note.text)
-    return {"status": "updated"}
 
 @app.delete("/notes/{note_id}")
 def delete_note(note_id: int):
     db.delete(note_id)
     return {"status": "deleted"}
 
-# --- Авторизация (JWT) ---
-def create_token(username: str):
-    payload = {
-        "sub": username,
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-    }
-    return jwt.encode(payload, SECRET, algorithm="HS256")
-
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    try:
-        token = credentials.credentials
-        payload = jwt.decode(token, SECRET, algorithms=["HS256"])
-        return payload["sub"]
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Токен истёк")
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Неверный токен")
-
+# --- Авторизация (используем наш класс AuthManager) ---
 @app.post("/register")
 def register(user: User):
-    if user.username in users:
-        raise HTTPException(status_code=400, detail="Пользователь уже есть")
-    users[user.username] = user.password
-    return {"message": "Зарегистрирован"}
+    return auth.register(user)
 
 @app.post("/login")
 def login(user: User):
-    if users.get(user.username) != user.password:
-        raise HTTPException(status_code=401, detail="Неверный логин или пароль")
-    token = create_token(user.username)
-    return {"token": token}
+    return auth.login(user)
 
 @app.get("/protected")
-def protected(username: str = Depends(get_current_user)):
+def protected(username: str = Depends(auth.get_current_user)):
     return {"message": "Привет, " + username + "! Ты в защищённой зоне"}
