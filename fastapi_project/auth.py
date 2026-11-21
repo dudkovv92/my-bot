@@ -1,10 +1,11 @@
+import os
 import jwt
 import datetime
 from fastapi import HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 
-SECRET = "super_secret_key"
+SECRET = os.getenv("SECRET_KEY", "super_secret_key")
 security = HTTPBearer()
 
 class User(BaseModel):

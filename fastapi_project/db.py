@@ -1,37 +1,40 @@
-import sqlite3
+import psycopg2
 import datetime
+from psycopg2.extras import RealDictCursor
 
 class NotesDB:
-    def __init__(self, path):
-        self.conn = sqlite3.connect(path, check_same_thread=False)
+    def __init__(self, db_url):
+        # db_url — это строка подключения к базе (например, postgresql://user:pass@localhost/db)
+        self.conn = psycopg2.connect(db_url, cursor_factory=RealDictCursor)
         self.cur = self.conn.cursor()
         self.cur.execute("""
             CREATE TABLE IF NOT EXISTS notes (
-                id INTEGER PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
                 text TEXT,
                 created_at TEXT
             )
         """)
         self.conn.commit()
-    def update(self, note_id, text):
-        self.cur.execute("UPDATE notes SET text = ? WHERE id = ?", (text, note_id))
-        self.conn.commit()
 
     def add(self, text):
         now = datetime.datetime.now().strftime("%d.%m.%Y %H:%M")
-        self.cur.execute("INSERT INTO notes (text, created_at) VALUES (?, ?)", (text, now))
+        self.cur.execute("INSERT INTO notes (text, created_at) VALUES (%s, %s) RETURNING id", (text, now))
+        new_id = self.cur.fetchone()["id"]
         self.conn.commit()
-        return self.cur.lastrowid
+        return new_id
 
     def get_all(self):
         self.cur.execute("SELECT id, text, created_at FROM notes")
-        return [{"id": r[0], "text": r[1], "created_at": r[2]} for r in self.cur.fetchall()]
+        return self.cur.fetchall()
 
-    def delete(self, note_id):
-        self.cur.execute("DELETE FROM notes WHERE id = ?", (note_id,))
+    def update(self, note_id, text):
+        self.cur.execute("UPDATE notes SET text = %s WHERE id = %s", (text, note_id))
         self.conn.commit()
 
-# --- Наш новый сервисный слой ---
+    def delete(self, note_id):
+        self.cur.execute("DELETE FROM notes WHERE id = %s", (note_id,))
+        self.conn.commit()
+
 class NotesService:
     def __init__(self, db):
         self.db = db
@@ -42,8 +45,8 @@ class NotesService:
     def add_note(self, text):
         return self.db.add(text)
 
-    def delete_note(self, note_id):
-        self.db.delete(note_id)
-
     def update_note(self, note_id, text):
         self.db.update(note_id, text)
+
+    def delete_note(self, note_id):
+        self.db.delete(note_id)
